@@ -48,6 +48,15 @@ fn main() {
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
 
+    // create an entity
+    gs.ecs.create_entity()
+        .with(Position {x: 40, y: 40})
+        .with(Renderable {
+            glyph: rltk::to_cp437('@'),
+            fg: RGB::named(rltk::YELLOW),
+            bg: RGB::named(rltk::BLACK),
+        }).build();
+
     // run the core loop
     rltk::main_loop(context, gs);
 }

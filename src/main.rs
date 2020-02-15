@@ -11,11 +11,16 @@ impl GameState for State {
 }
 
 fn main() {
+    // import RltkBuilder in to scope
     use rltk::RltkBuilder;
+    // create base game context
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike")
         .build();
 
+    // initialize game state
     let gs = State{};
+
+    // run the core loop
     rltk::main_loop(context, gs);
 }

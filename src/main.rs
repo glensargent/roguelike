@@ -16,7 +16,7 @@ impl GameState for State {
         // get component from ecs storage
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
-
+        // only render the entities with both position and renderable components
         for (pos, render) in (&positions, &renderables).join() {
             ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
         }
@@ -36,6 +36,24 @@ struct Renderable {
     bg: RGB,
 }
 
+// Create ecs component for movable entities
+#[derive(Component)]
+struct LeftMover{}
+
+struct LeftWalker {}
+impl<'a> System<'a> for LeftWalker{
+    type SystemData = (ReadStorage<'a, LeftMover>,
+                        WriteStorage<'a, Position>);
+
+    fn run(&mut self, (lefty, mut pos) : Self::SystemData) {
+        for (_lefty,pos) in (&lefty, &mut pos).join() {
+            pos.x -= 1;
+            if pos.x < 0 { pos.x = 79; }
+        }
+
+    }
+}
+
 fn main() {
     // import RltkBuilder in to scope
     use rltk::RltkBuilder;
@@ -52,6 +70,7 @@ fn main() {
     // tell ecs about the components we have created
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
+    gs.ecs.register::<LeftMover>();
 
 
     // create main entity
@@ -61,7 +80,8 @@ fn main() {
         glyph: rltk::to_cp437('@'),
         fg: RGB::named(rltk::YELLOW),
         bg: RGB::named(rltk::BLACK),
-    }).build();
+    })
+    .build();
 
     // create alternative entities
     for i in 0..10 {
@@ -71,7 +91,9 @@ fn main() {
                 glyph: rltk::to_cp437('☺'),
                 fg: RGB::named(rltk::RED),
                 bg: RGB::named(rltk::BLACK),
-            }).build();
+            })
+            .with(LeftMover{})
+            .build();
     }
 
     // run the core loop
